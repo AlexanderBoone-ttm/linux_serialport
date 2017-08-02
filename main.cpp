@@ -14,6 +14,7 @@ using namespace std;
 
 int open_port(void);
 int configure_port(int fd);
+void write_port(char* string, int len);
 
 
 int main(int argc,char** argv)
@@ -24,9 +25,7 @@ int main(int argc,char** argv)
   configure_port(fd);
 
 
-
   while(true){
-
   }
   close(fd);
 
@@ -70,3 +69,13 @@ int configure_port(int fd)      // configure the port
 	return(fd);
 
 } //configure_port
+
+
+void write_port(char* string, int len){
+  int n;
+  n = write(fd,string, len);
+  if (n < 0)
+    cout<< "write to port failed!"<<endl;
+
+
+}

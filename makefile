@@ -1,3 +1,5 @@
-main: main.cpp
-	g++ -o main main.cpp
+CC=g++
+
+main: main.o
+	$(CC) -o main main.o
 
