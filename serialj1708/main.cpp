@@ -30,8 +30,8 @@ int main(int argc,char** argv)
 
   while(true){
 
-      sp.write_port(buffer_out,sizeof(buffer_out));
-      sleep(1);
+      //sp.write_port(buffer_out,sizeof(buffer_out));
+     // sleep(1);
   }
 
   return 0;

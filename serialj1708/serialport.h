@@ -17,8 +17,14 @@ public:
     std::ofstream fileout;
 
 private:
+    volatile unsigned int flag_packet;
+    volatile unsigned int flag_idle;
+    volatile unsigned int count_times;// 100us, 10 times
+
+
     int fd;
     pthread_t _readport;
+    pthread_t _idle_time;
 
     int open_port(void);
     void close_port(void);
@@ -28,6 +34,9 @@ private:
     static void* read_thread(void* i);
     void* readport();
     void readbytesPort(unsigned char* buf_in, int len);
+
+    static void* idle_get(void* i);
+    void* idle_timer();
 
 
 };

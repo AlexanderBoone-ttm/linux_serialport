@@ -1,4 +1,4 @@
-#include "serialport.h"
+﻿#include "serialport.h"
 
 #include <stdlib.h>
 #include <stdio.h>   /* Standard input/output definitions */
@@ -9,7 +9,7 @@
 #include <termios.h> /* POSIX terminal control definitions */
 #include <iostream>
 
-#define SERIAL_DEVICE "/dev/ttyACM0"
+#define SERIAL_DEVICE "/dev/ttyUSB0"
 
 using namespace std;
 
@@ -17,6 +17,9 @@ using namespace std;
 Serialport::Serialport(){}
 
 void Serialport::begin(){
+
+   count_times = 0;
+
    fd = open_port(); // open serial port
 
    if(fd != -1){
@@ -26,9 +29,31 @@ void Serialport::begin(){
 
    }
 
+   pthread_create(&_idle_time,NULL,&Serialport::idle_get,this);
+
 
 }
 
+void* Serialport::idle_get(void* i){
+    return ((Serialport *)i)->idle_timer();
+}
+
+void* Serialport::idle_timer(){
+
+    while(true){
+        count_times ++;
+        if(count_times == 10) {// reach 1ms
+            if(flag_packet){
+                printf("\n");
+                flag_packet = 0;
+            }
+
+        }
+        usleep(100); //wait 100us
+    }
+
+    return 0;
+}
 
 void* Serialport::read_thread(void *i){
     return ((Serialport *)i)->readport();
@@ -42,12 +67,19 @@ void* Serialport::readport(){
 
     while(true){
         bytes_read = read(fd,&byte_read,1);
-        if(bytes_read == 0){
-            printf("%d\n",bytes_read);
+
+        if(bytes_read == 0){ // timeout!, dont byte on buffer
+            //printf("%d\n",bytes_read);
             continue;
+        }else{ // read bytes
+            flag_packet = 1;
+            count_times = 0; // reset counter
+            printf("%c",byte_read);//fflush(stdout);
+
         }
 
-        printf("%c",byte_read);
+
+
     }
 
     return 0;
@@ -65,8 +97,8 @@ int Serialport::open_port(void){
         cout<<"can't open port"<<endl;
     }else{
         cout<<"open port success!\n"<<endl;
-        fcntl(fd, F_SETFL, 0); // blocking behavior read port
-        //fcntl(fd, F_SETFL, FNDELAY);// return 0 if no characters are available
+        //fcntl(fd, F_SETFL, 0); // blocking behavior read port
+        fcntl(fd, F_SETFL, FNDELAY);// return 0 if no characters are available
 
 
         struct termios port_settings;      // structure to store the port settings in
@@ -84,7 +116,7 @@ int Serialport::open_port(void){
         port_settings.c_oflag = 0;
         port_settings.c_lflag = 0;
         //port_settings.c_cc[VMIN] = 1;//ARRAY_SIZE  wait for a single byte
-        port_settings.c_cc[VTIME] = 1;/* Timeout after 0.1 seconds */
+        //port_settings.c_cc[VTIME] = 1;/* Timeout after 0.1 seconds */
 
         tcsetattr(fd, TCSANOW, &port_settings);    // apply the settings to the port
 
@@ -105,9 +137,9 @@ void Serialport::write_port(const char *msg, int len){
     n = write(fd,msg,len);
 
     if (n < 0)
-        cout<< "write to port failed!"<<endl;
+       cout<< "write to port failed!"<<endl;
     else
-        printf("%d write bytes \n",n);
+       printf("%d write bytes \n",n);
 
 }
 //void Serialport::write_port(int fd, const char* msg,int len){
