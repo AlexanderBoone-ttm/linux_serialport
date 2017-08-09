@@ -8,8 +8,11 @@
 #include <errno.h>   /* Error number definitions */
 #include <termios.h> /* POSIX terminal control definitions */
 #include <iostream>
+#include <time.h>
 
-#define SERIAL_DEVICE "/dev/ttyUSB0"
+#include <fstream>
+
+#define SERIAL_DEVICE "/dev/ttyACM1"
 
 using namespace std;
 
@@ -18,7 +21,10 @@ Serialport::Serialport(){}
 
 void Serialport::begin(){
 
-   count_times = 0;
+   fileout.open(fname.c_str(),std::ofstream::out);
+   endp[0]=0;
+   endp[1]=0;
+   endp[2]=0;
 
    fd = open_port(); // open serial port
 
@@ -29,7 +35,9 @@ void Serialport::begin(){
 
    }
 
-   pthread_create(&_idle_time,NULL,&Serialport::idle_get,this);
+   //open file
+
+  //pthread_create(&_idle_time,NULL,&Serialport::idle_get,this);
 
 
 }
@@ -39,17 +47,24 @@ void* Serialport::idle_get(void* i){
 }
 
 void* Serialport::idle_timer(){
+    struct timespec tim,tim2;
+    tim.tv_nsec = 104000L ; //100 us
+    tim.tv_sec = 0;
 
-    while(true){
+
+    while(true){ //doesnt work
+
         count_times ++;
         if(count_times == 10) {// reach 1ms
-            if(flag_packet){
+            if(flag_packet_end){
                 printf("\n");
-                flag_packet = 0;
+                fileout<<endl;
             }
 
         }
-        usleep(100); //wait 100us
+        //usleep(100); //wait 100us
+        nanosleep(&tim, &tim2);
+
     }
 
     return 0;
@@ -70,16 +85,39 @@ void* Serialport::readport(){
 
         if(bytes_read == 0){ // timeout!, dont byte on buffer
             //printf("%d\n",bytes_read);
+            //flag_packet_end = 0;
             continue;
         }else{ // read bytes
-            flag_packet = 1;
-            count_times = 0; // reset counter
-            printf("%c",byte_read);//fflush(stdout);
+            //flag_packet_end = 1;
+            //count_times = 0; // reset counter
+
+            endp[0] = endp[1];//k-2 , k-1
+            endp[1] = endp[2];//k-1 , k
+            endp[2] = byte_read; //k , current byte
+
+            char ss[10];
+            sprintf(ss,"%.2X",byte_read);
+
+            fileout <<ss;// save on file
+            printf("%c",byte_read);
+
+            if((endp[0]=='C') && (endp[1]=='D') && (endp[2]=='A')){
+                    // so end of packet
+                    fileout << endl;
+                    printf("\n");
+                    //reset
+                    endp[0]=0;
+                    endp[1]=0;
+                    endp[2]=0;
+
+            }else{
+                fileout <<",";
+            }
+
+
+
 
         }
-
-
-
     }
 
     return 0;

@@ -17,10 +17,10 @@ public:
     std::ofstream fileout;
 
 private:
-    volatile unsigned int flag_packet;
+    volatile unsigned int flag_packet_end;
     volatile unsigned int flag_idle;
     volatile unsigned int count_times;// 100us, 10 times
-
+    unsigned char endp[3];
 
     int fd;
     pthread_t _readport;

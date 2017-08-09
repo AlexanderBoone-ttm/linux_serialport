@@ -12,8 +12,17 @@ using namespace std;
 int main(int argc,char** argv)
 {
 
+  string fn;
+  for(int i=1; i<argc; ++i){
+      fn += argv[i];
+  }
+
+  cout << fn << endl;
+
+
   cout << "sample open serial port ... "<< endl;
   Serialport sp;
+  sp.fname = fn;
   sp.begin();
 
   char buffer_out[3] = {'a','b','c'};
@@ -34,6 +43,7 @@ int main(int argc,char** argv)
      // sleep(1);
   }
 
+  sp.fileout.close();
   return 0;
 }
 
