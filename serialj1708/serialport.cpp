@@ -12,7 +12,7 @@
 
 #include <fstream>
 
-#define SERIAL_DEVICE "/dev/ttyACM1"
+#define SERIAL_DEVICE "/dev/ttyUSB0"
 
 using namespace std;
 
@@ -99,9 +99,13 @@ void* Serialport::readport(){
             sprintf(ss,"%.2X",byte_read);
 
             fileout <<ss;// save on file
-            printf("%c",byte_read);
+            //printf("%c",byte_read);
+            printf("%.2X ",byte_read);
 
-            if((endp[0]=='C') && (endp[1]=='D') && (endp[2]=='A')){
+            //printf("\n");
+
+
+            if((endp[0]=='M') && (endp[1]=='S') && (endp[2]=='S')){
                     // so end of packet
                     fileout << endl;
                     printf("\n");
