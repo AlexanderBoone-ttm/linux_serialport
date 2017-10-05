@@ -145,8 +145,8 @@ int Serialport::open_port(void){
 
         struct termios port_settings;      // structure to store the port settings in
 
-        cfsetispeed(&port_settings, B9600);    // set baud rates
-        cfsetospeed(&port_settings, B9600);
+        cfsetispeed(&port_settings, B115200);    // set baud rates
+        cfsetospeed(&port_settings, B115200);
 
         port_settings.c_cflag &= ~PARENB;    // set no parity, stop bits, data bits
         port_settings.c_cflag &= ~CSTOPB;
@@ -174,7 +174,7 @@ void Serialport::close_port(void){
     close(fd);
 }
 
-void Serialport::write_port(const char *msg, int len){
+void Serialport::write_port(unsigned char *msg, int len){
     int n;
     n = write(fd,msg,len);
 

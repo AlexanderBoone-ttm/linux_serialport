@@ -11,7 +11,7 @@ public:
     Serialport();
 
     void begin();
-    void write_port(const char* msg, int len);
+    void write_port(unsigned char* msg, int len);
 
     std::string fname;
     std::ofstream fileout;
